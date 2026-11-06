@@ -1,0 +1,49 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import platform
+from pathlib import Path
+
+SRC_DIR = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = SRC_DIR
+DATA_DIR = PROJECT_ROOT / "data"
+OUTPUT_DIR = PROJECT_ROOT / "output"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+SAVE_DIR = OUTPUT_DIR / "review_cnt_by_brand"
+
+plt.style.use("seaborn-v0_8-whitegrid")  # First and only
+plt.rcParams["font.family"] = "sans-serif"
+plt.rcParams["font.sans-serif"] = ["Malgun Gothic", "AppleGothic", "NanumGothic"]
+plt.rcParams["axes.unicode_minus"] = False
+
+df = pd.read_csv(DATA_DIR / "oliveyoung_lip_2.10.csv")
+
+top_review_brands = (
+    df.groupby("브랜드")["리뷰수"].sum().sort_values(ascending=False).head(10)
+)
+
+plt.figure(figsize=(12, 6))
+
+sns.barplot(x=top_review_brands.index, y=top_review_brands.values, palette="Set2")
+
+plt.title(
+    "🏆 올리브영 립 메이크업 누적 리뷰 수 (상위 10개 브랜드)", fontsize=16, pad=20
+)
+plt.xlabel("브랜드명", fontsize=12)
+plt.ylabel("누적 리뷰 수 (개)", fontsize=12)
+plt.xticks(rotation=45)
+
+offset = top_review_brands.max() * 0.02
+
+for i, count in enumerate(top_review_brands.values):
+    plt.text(
+        i,
+        count + offset,
+        f"{count:,.0f}개",
+        ha="center",
+        fontsize=11,
+        fontweight="bold",
+    )
+
+plt.tight_layout()
+plt.savefig(SAVE_DIR, dpi=300, bbox_inches="tight")
